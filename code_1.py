@@ -107,20 +107,25 @@ def temperature(latitude):
     # Équilibre radiatif : P = sigma * T^4
     # => T = (P / sigma)^(1/4)
     # Convertir la température de K à °C
-    T = (S / sigma)**0.25 - 273.15
+    T = (S / sigma)**0.25
     
     return T
 
 # Générer les données pour la latitude de -90 à 90 degrés
 latitudes = np.linspace(-90, 90, 180)
 temperatures = [temperature(lat) for lat in latitudes]
-
+t=0
+for temp in temperatures : 
+    t += temp
+    tmoy = t/len(temperatures)
+    
+print (tmoy)
 # Tracer les résultats
 plt.figure(figsize=(10, 6))
 plt.plot(latitudes, temperatures, label='Température de surface')
 plt.title("Température de surface en fonction de la latitude")
 plt.xlabel("Latitude (degrés)")
-plt.ylabel("Température (°C)")
+plt.ylabel("Température (°K)")
 plt.legend()
 plt.grid(True)
 plt.show()
