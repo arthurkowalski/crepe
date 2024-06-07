@@ -1,10 +1,10 @@
 import numpy as np
 
 # Constantes
-S0 = 340  # Constante solaire en W/m²
+S0 = 1361  # Constante solaire en W/m²
 alpha = 0.3  # Albedo moyen de la Terre
 latitude = 0  # Latitude en degrés
-day_of_year = 195  # Jour de l'année (1 à 365)
+day_of_year = 172  # Jour de l'année (1 à 365)
 hour_angle = 0  # Angle horaire en degrés (0 à midi solaire)
 
 # Conversion en radians
@@ -29,3 +29,9 @@ P_absorbee_point = P_recue_point * (1 - alpha)
 P_emise_point = P_absorbee_point
 
 print(f"Puissance émise par rayonnement infrarouge en un point : {P_emise_point:.2f} W/m²")
+
+sigma = 5.67e-8  # Constante de Stefan-Boltzmann en W/m²/K^4
+alpha = 0.3  # Albedo moyen de la Terre
+
+Ts = ((P_absorbee_point*2) / sigma) ** 0.25 - 273
+print(f"Température de surface : {Ts:.2f} °C")
