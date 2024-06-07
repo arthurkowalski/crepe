@@ -1,37 +1,134 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib.widgets import Slider
 
-# Les années jusqu'en 2100
-years = np.arange(1850, 2101, 10)
+# Constantes
+constante_solaire = 1361  # W/m^2, valeur moyenne au niveau de la Terre
+rayon_astre = 6371  # km, par exemple le rayon de la Terre
+sigma = 5.670e-8  # Constante de Stefan-Boltzmann en W/m^2/K^4
+tau = 5 # Constante de temps thermique en heures
 
-# Niveaux de CO2 et anomalies de température jusqu'en 2020 (valeurs réelles)
-co2_levels = np.array([285, 287, 288, 290, 291, 292, 294, 295, 296, 297, 300, 316, 325, 338, 354, 369, 390, 414])
-temperature_anomalies = np.array([-0.3, -0.3, -0.3, -0.2, -0.3, -0.1, -0.4, -0.3, -0.1, 0.0, -0.2, -0.1, -0.1, 0.1, 0.2, 0.4, 0.6, 1.0])
+rayon_astre_m = rayon_astre * 1000
 
-# Création du graphique initial
-plt.figure(figsize=(10, 6))
-plt.scatter(co2_levels, temperature_anomalies, color='blue', label='Données')
-plt.plot(co2_levels, temperature_anomalies, color='blue')
+# Grille sphérique pour représenter la surface de l'astre
+phi = np.linspace(0, 2 * np.pi, 60)
+theta = np.linspace(0, np.pi, 30)
+phi, theta = np.meshgrid(phi, theta)
 
-# Ajout des labels et du titre
-plt.xlabel('Niveaux de CO2 (ppm)')
-plt.ylabel('Anomalies de température (°C)')
-plt.title('Anomalies de température en fonction des niveaux de CO2')
-plt.legend()
-plt.grid(True)
+x = rayon_astre_m * np.sin(theta) * np.cos(phi)
+y = rayon_astre_m * np.sin(theta) * np.sin(phi)
+z = rayon_astre_m * np.cos(theta)
 
-# Scénarios futurs avec des niveaux de CO2 et d'anomalies de température fictifs
-future_co2_scenarios = [[420, 430, 440, 450, 460, 470, 480, 490, 500, 510, 520, 530, 540, 550, 560, 570, 580, 590, 600, 610],
-                        [400, 410, 420, 430, 440, 450, 460, 470, 480, 490, 500, 510, 520, 530, 540, 550, 560, 570, 580, 590],
-                        [390, 395, 400, 405, 410, 415, 420, 425, 430, 435, 440, 445, 450, 455, 460, 465, 470, 475, 480, 485]]
+# Angle d'incidence des rayons solaires
+normal = np.array([np.sin(theta) * np.cos(phi), np.sin(theta) * np.sin(phi), np.cos(theta)])
+sun_vector = np.array([1, 0, 0])
 
-future_temperature_scenarios = [[1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9],
-                                [0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7],
-                                [0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5]]
+# Initialisation des températures avec des floats
+initial_temperature = 288.0  # Température initiale en Kelvin
+temperature = np.full(phi.shape, initial_temperature, dtype=float)
 
-for i in range(len(future_co2_scenarios)):
-    plt.plot(future_co2_scenarios[i], future_temperature_scenarios[i], label=f'Scénario {i+1}')
+# Fonction pour calculer la puissance reçue en fonction du temps
+def calc_power(time):
+    # Calcul de l'angle de rotation en fonction du temps
+    angle_rotation = (time / 24) * 2 * np.pi  # Conversion du temps en angle
+    rotation_matrix = np.array([
+        [np.cos(angle_rotation), -np.sin(angle_rotation), 0],
+        [np.sin(angle_rotation), np.cos(angle_rotation), 0],
+        [0, 0, 1]
+    ])
+    sun_vector_rotated = np.dot(rotation_matrix, sun_vector)
 
-# Affichage du graphique
-plt.legend()
+    # Calculer l'angle d'incidence (cosinus de l'angle)
+    cos_theta_incidence = np.clip(np.dot(normal.T, sun_vector_rotated), 0, 1).T
+
+    coef_reflexion = 0.3
+    # Puissance reçue par unité de surface (W/m^2)
+    puissance_recue = constante_solaire * cos_theta_incidence * (1 - coef_reflexion)
+
+    return puissance_recue
+
+# Fonction pour mettre à jour les températures en tenant compte de l'inertie thermique
+def update_temperature(time, dt=1):
+    global temperature
+    puissance_recue = calc_power(time)
+    equilibrium_temperature = (puissance_recue / sigma) ** 0.25
+    temperature += (equilibrium_temperature - temperature) * dt / tau
+    return temperature
+
+# Fonction pour mettre à jour le graphique
+def update_plot(time):
+    updated_temp = update_temperature(time)
+    ax.clear()
+    surf = ax.plot_surface(x, y, z, facecolors=plt.cm.viridis(updated_temp / np.max(updated_temp)), rstride=1, cstride=1, alpha=0.9, linewidth=0)
+    ax.set_xlabel('X (m)')
+    ax.set_ylabel('Y (m)')
+    ax.set_zlabel('Z (m)')
+    ax.set_title(f'Température de la surface à t = {time:.1f} h')
+    fig.canvas.draw_idle()
+
+# Fonction pour convertir les coordonnées GPS en puissance reçue et température
+def gps_to_power_and_temp(latitude, longitude, time):
+    # Convertir latitude et longitude en radians
+    lat_rad = np.radians(90 - latitude)  # Conversion pour theta
+    lon_rad = np.radians(longitude)  # Conversion pour phi
+
+    # Calculer les coordonnées sphériques correspondantes
+    x_gps = rayon_astre_m * np.sin(lat_rad) * np.cos(lon_rad)
+    y_gps = rayon_astre_m * np.sin(lat_rad) * np.sin(lon_rad)
+    z_gps = rayon_astre_m * np.cos(lat_rad)
+
+    # Trouver l'indice de la grille le plus proche des coordonnées calculées
+    distances = np.sqrt((x - x_gps)**2 + (y - y_gps)**2 + (z - z_gps)**2)
+    idx = np.unravel_index(np.argmin(distances, axis=None), distances.shape)
+    puissance_recue = calc_power(time)
+    puissance = puissance_recue[idx]
+    updated_temp = update_temperature(time)
+    temp = updated_temp[idx]
+
+    return puissance, temp
+
+# # # Exemple d'utilisation
+# # latitude = 0  # Exemple de latitude
+# # longitude = -180  # Exemple de longitude
+# # time = 0
+# # puissance, temp = gps_to_power_and_temp(latitude, longitude, time)
+# # print(f"Puissance reçue à {time} heure à la latitude {latitude}° et longitude {longitude}°: {puissance:.2f} W/m^2")
+# # print(f"Température locale à {time} heure à la latitude {latitude}° et longitude {longitude}°: {temp:.2f} K")
+
+# Création de la figure et de l'axe
+fig = plt.figure(figsize=(10, 7))
+ax = fig.add_subplot(111, projection='3d')
+
+# Initialisation du graphique
+update_plot(0)
+
+# Création du slider
+ax_slider = plt.axes([0.25, 0.02, 0.50, 0.03], facecolor='lightgoldenrodyellow')
+time_slider = Slider(ax_slider, 'Time (h)', 0, 48, valinit=0, valstep=0.3)
+
+# Liaison du slider à la fonction de mise à jour
+time_slider.on_changed(update_plot)
+
 plt.show()
+
+def extract_coordinates(phi, theta, rayon_astre_m):
+    # Initialiser une liste pour stocker les coordonnées
+    coordinates = []
+
+    # Parcourir chaque point de la grille
+    for i in range(phi.shape[0]):
+        for j in range(phi.shape[1]):
+            x_central = rayon_astre_m * np.sin(theta[i, j]) * np.cos(phi[i, j])
+            y_central = rayon_astre_m * np.sin(theta[i, j]) * np.sin(phi[i, j])
+            z_central = rayon_astre_m * np.cos(theta[i, j])
+            coordinates.append((x_central, y_central, z_central))
+
+    return coordinates
+
+# Utiliser la fonction pour extraire les coordonnées centrales
+coordinates = extract_coordinates(phi, theta, rayon_astre_m)
+
+# Exemple d'affichage des premières coordonnées
+print((coordinates))
+
