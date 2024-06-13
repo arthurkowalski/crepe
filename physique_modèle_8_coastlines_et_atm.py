@@ -5,7 +5,7 @@ from matplotlib.widgets import Slider, Button
 import shapefile
 
 # Charger les données SHP
-sf = shapefile.Reader("ne_10m_coastline.shp")
+sf = shapefile.Reader("data/ne_10m_coastline.shp")
 shapes = sf.shapes()
 
 # Constantes
