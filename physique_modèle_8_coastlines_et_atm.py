@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.widgets import Slider, Button
-import shapefile
+import shapefile #pour l'installer : pip install pyshp
 
 # Charger les données SHP
 sf = shapefile.Reader("data/ne_10m_coastline.shp")
