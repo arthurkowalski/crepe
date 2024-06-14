@@ -68,9 +68,33 @@ def calc_power_temp(time, mois):
 
     return puissance_recue, temperature
 
+
+C_CO2_moy = 400 #ppm
+C_H2O_moy = 25000 #ppm
+
+def effet_de_serre(puissance_recue, C_CO2=C_CO2_moy, C_H2O=C_H2O_moy):
+    X = (15 + 273)**4 * sigma  # Pour T = +15°C
+    coef_moy = (X - puissance_recue) / X  # X = puissance émise par la terre
+
+    coef = 0.25 * coef_moy + 0.25 * coef_moy * (C_CO2 / C_CO2_moy)**(1 / 2.6) + 0.5 * coef_moy * (C_H2O / C_H2O_moy)**(1 / 2.6)
+
+    mask = coef != 1
+
+    # Initialiser puissance_emise avec que des zéros
+    puissance_emise = np.zeros_like(puissance_recue)
+
+    # Calculer puissance_emise uniquement pour les éléments où coef n'est pas égal à 1
+    puissance_emise[mask] = puissance_recue[mask] / (1 - coef[mask])
+
+    temperature = (puissance_recue + puissance_emise / sigma)**(1 / 4) - 273
+
+    return puissance_recue + puissance_emise
+
+
 # Fonction pour mettre à jour le graphique
 def update_plot(time, mois=3):
     puissance_recue, _ = calc_power_temp(time, mois)
+    puissance_recue = effet_de_serre(puissance_recue,C_CO2_moy, C_H2O_moy)
     ax.clear()
 
     for shape in shapes:
