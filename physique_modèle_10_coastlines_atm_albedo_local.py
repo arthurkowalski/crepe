@@ -33,7 +33,8 @@ constante_solaire = 1361  # W/m^2, valeur moyenne au niveau de la Terre
 rayon_astre = 6371  # km, par exemple le rayon de la Terre
 sigma = 5.670e-8  # Constante de Stefan-Boltzmann en W/m^2/K^4
 epaisseur_atmosphere = 600  # km, approximative thickness of Earth's atmosphere
-
+C_CO2_moy = 400 #ppm
+C_H2O_moy = 25000 #ppm
 rayon_astre_m = rayon_astre * 1000
 epaisseur_atmosphere_m = epaisseur_atmosphere * 1000
 
@@ -99,13 +100,41 @@ def calc_power_temp(time, mois):
 
     return puissance_recue, temperature
 
+def effet_de_serre(puissance_recue, C_CO2=C_CO2_moy, C_H2O=C_H2O_moy):
+    X = (15 + 273)**4 * sigma  # Pour T = +15°C
+    coef_moy = (X - puissance_recue) / X  # X = puissance émise par la terre
+
+    coef = 0.25 * coef_moy + 0.25 * coef_moy * (C_CO2 / C_CO2_moy)**(1 / 2.6) + 0.5 * coef_moy * (C_H2O / C_H2O_moy)**(1 / 2.6)
+
+    mask = coef != 1
+
+    # Initialiser puissance_emise avec que des zéros
+    puissance_emise = np.zeros_like(puissance_recue)
+
+    # Calculer puissance_emise uniquement pour les éléments où coef n'est pas égal à 1
+    puissance_emise[mask] = puissance_recue[mask] / (1 - coef[mask])
+
+    temperature = (puissance_recue + puissance_emise / sigma)**(1 / 4) - 273
+    puissance_tot = puissance_recue + puissance_emise
+
+    temperature = (puissance_tot / sigma) ** 0.25
+
+    return puissance_tot, temperature
+
+
 # Fonction pour mettre à jour le graphique
 def update_plot(time, mois=3):
-    puissance_recue, _ = calc_power_temp(time, mois)
+    puissance_recue_sans_effet_serre, temp = calc_power_temp(time, mois)
+
+    puissance_recue, temp_apres = effet_de_serre(puissance_recue_sans_effet_serre,C_CO2_moy, C_H2O_moy)
+    # prin("effet de serre a jouté en moyenne")
+    print(f'effet de serre a ajouté en moyenne {round(np.mean(temp_apres-temp))} degrés celcius')
     ax.clear()
+    pt = 0
     for shape in shapes:
         points = np.array(shape.points)
         points = points[::300]
+        pt += len(points)
         lon = points[:, 0]
         lat = points[:, 1]
         if len(lon) < 2 or len(lat) < 2:
@@ -113,7 +142,7 @@ def update_plot(time, mois=3):
         x_coast, y_coast, z_coast = project_to_sphere(lon, lat, rayon_astre_m + 100000)
         ax.plot(x_coast, y_coast, z_coast, color='black', zorder=5)
 
-    surf = ax.plot_surface(x, y, z, facecolors=plt.cm.viridis(puissance_recue / np.max(puissance_recue)), rstride=1, cstride=1, alpha=1, linewidth=0)
+    surf = ax.plot_surface(x, y, z, facecolors=plt.cm.viridis(temp / np.max(temp)), rstride=1, cstride=1, alpha=1, linewidth=0)
     atmosphere = ax.plot_surface(x_atmosphere, y_atmosphere, z_atmosphere, color='blue', alpha=0.1, linewidth=0)
 
     ax.set_xlabel('X (m)')
