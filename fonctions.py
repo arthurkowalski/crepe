@@ -3,6 +3,17 @@ import shapefile
 import matplotlib.pyplot as plt
 
 def update_sun_vector(mois, sun_vector):
+    """
+    Met à jour le vecteur solaire en fonction du mois pour tenir compte de l'inclinaison saisonnière de l'axe de la Terre.
+    
+    Parameters:
+    mois (int): Le mois de l'année (1 pour janvier, 12 pour décembre).
+    
+    Returns:
+    numpy.ndarray: Le vecteur solaire mis à jour après application de la rotation saisonnière.
+
+    La matrice de rotation saisonnière est utilisée pour faire pivoter le vecteur solaire autour de l'axe y en fonction de la saison .
+    """
     angle_inclinaison = np.radians(23 * np.cos(2 * np.pi * mois / 12))
     rotation_matrix_saison = np.array([
         [np.cos(angle_inclinaison), 0, np.sin(angle_inclinaison)],
@@ -37,6 +48,28 @@ def get_albedo(lat, lon, mois, list_albedo, latitudes, longitudes):
     return list_albedo[mois-1][lat_idx, lon_idx]
 
 def calc_power_temp(time, mois, sun_vector, x, y, z, phi, theta, constante_solaire, sigma, rayon_astre_m, list_albedo, latitudes, longitudes):
+    """
+    Calcule la puissance solaire reçue et la température en fonction de l'heure et du mois.
+
+    Paramètres:
+    time (float): Heure de la journée (0-24).
+    mois (int): Mois de l'année (1-12).
+    sun_vector (numpy.ndarray): Vecteur solaire initial.
+    x, y, z (numpy.ndarray): Coordonnées de la grille sphérique.
+    phi, theta (numpy.ndarray): Coordonnées angulaires de la grille sphérique.
+    constante_solaire (float): Constante solaire (W/m^2).
+    sigma (float): Constante de Stefan-Boltzmann (W/m^2/K^4).
+    rayon_astre_m (float): Rayon de l'astre en mètres.
+    list_albedo (list): Grilles d'albédo pour chaque mois.
+    latitudes, longitudes (numpy.ndarray): Latitudes et longitudes des données d'albédo.
+
+    Retours:
+    tuple: Puissance reçue (numpy.ndarray) et température (numpy.ndarray).
+
+    La matrice de rotation fait pivoter le vecteur solaire autour de l'axe z. L'angle d'incidence est calculé,
+    puis l'albédo est mappé sur la grille pour ajuster la puissance reçue. La température est déterminée
+    par la loi de Stefan-Boltzmann.
+    """
     # Calcul de l'angle de rotation en fonction du temps
     angle_rotation = (time / 24) * 2 * np.pi  # Conversion du temps en angle
     rotation_matrix = np.array([
