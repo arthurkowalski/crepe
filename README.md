@@ -1,13 +1,16 @@
 # crepe
 /Crepe 
 
-Modélisation 
+Modélisation : 
+    Permet de prédire la température en chaque point de la surface en fonction du mois de l'année et de l'heure de la journée 
 
 
-Fonctions 
+Fonctions :
+    Module contenant l'ensemble des fonctions utilisés dans Modelisation.py
 
 
-ConstructionsCSV
+ConstructionsCSV : 
+
 
 
 Remplissage 
