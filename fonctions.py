@@ -113,6 +113,30 @@ def calc_power_temp(time, mois, sun_vector, x, y, z, phi, theta, constante_solai
 
     return puissance_recue, temperature
 
+
+def effet_de_serre(puissance_recue, C_CO2=400, C_H2O=25000): #valeurs par défaut = valeurs moyennes en ppm
+    """
+    Fonction pour rajouter l'effet de serre
+    Elle prend en entrée la puissance solaire reçue, la concentration de CO2 dans l'air (optionnel, vaut la valeur moyenne par défaut) et la concentration de H2O dans l'air (optionnel, vaut la valeur moyenne par défaut)
+    Elle sort la puissance reçue + la puissance émise. Cela correspond à la puissance totale émise par la terre, c'est à partir de cette puissance qu'on peut calculer la température à la surface de la terre
+    """
+    X = (15 + 273)**4 * sigma  # Pour T = +15°C
+    coef_moy = (X - puissance_recue) / X  # X = puissance émise par la terre
+
+    coef = 0.25 * coef_moy + 0.25 * coef_moy * (C_CO2 / C_CO2_moy)**(1 / 2.6) + 0.5 * coef_moy * (C_H2O / C_H2O_moy)**(1 / 2.6)
+
+    mask = coef != 1
+
+    # Initialiser puissance_emise avec que des zéros
+    puissance_emise = np.zeros_like(puissance_recue)
+
+    # Calculer puissance_emise uniquement pour les éléments où coef n'est pas égal à 1
+    puissance_emise[mask] = puissance_recue[mask] / (1 - coef[mask])
+
+    temperature = (puissance_recue + puissance_emise / sigma)**(1 / 4) - 273
+    # print(temperature)
+    return puissance_recue + puissance_emise, temperature
+
 def update_plot(time, mois, ax, fig, shapes, x, y, z, constante_solaire, sigma, phi, theta, rayon_astre_m, list_albedo, latitudes, longitudes):
     """
     Fonction prend en entrée l'heure de la journée et le mois (par défaut, Mars : sera modifié quand on clique sur les boutons à gauche de la modélisation), l'axe, la figure, shapes, les coordonnées (x,y,z), les constantes :sigma, phi, theta, rayon_astre_m, la liste d'albedo, la latitude et la longitude 
@@ -120,6 +144,7 @@ def update_plot(time, mois, ax, fig, shapes, x, y, z, constante_solaire, sigma, 
     """
     sun_vector = np.array([1, 0, 0])
     puissance_recue, _ = calc_power_temp(time, mois, sun_vector, x, y, z, phi, theta, constante_solaire, sigma, rayon_astre_m, list_albedo, latitudes, longitudes)
+    puissance_recu, temperature_recue = effet_de_serre(puissance_recue)
     ax.clear()
 
     for shape in shapes:
@@ -129,7 +154,7 @@ def update_plot(time, mois, ax, fig, shapes, x, y, z, constante_solaire, sigma, 
             ax.plot(x_coast, y_coast, z_coast, color='black', zorder=5)
 
     # Plot the sphere surface
-    surf = ax.plot_surface(x, y, z, facecolors=plt.cm.viridis(puissance_recue / np.max(puissance_recue)), rstride=1, cstride=1, linewidth=1)
+    surf = ax.plot_surface(x, y, z, facecolors=plt.cm.viridis(temperature_recue / np.max(temperature_recue)), rstride=1, cstride=1, linewidth=1)
 
     ax.set_xlabel('X (m)')
     ax.set_ylabel('Y (m)')
