@@ -114,10 +114,10 @@ def calc_power_temp(time, mois, sun_vector, x, y, z, phi, theta, constante_solai
     return puissance_recue, temperature
 
 
-def effet_de_serre(puissance_recue, C_CO2=400, C_H2O=25000): #valeurs par défaut = valeurs moyennes en ppm
+def effet_de_serre(puissance_recue, sigma, C_CO2=400, C_H2O=25000): #valeurs par défaut = valeurs moyennes en ppm
     """
     Fonction pour rajouter l'effet de serre
-    Elle prend en entrée la puissance solaire reçue, la concentration de CO2 dans l'air (optionnel, vaut la valeur moyenne par défaut) et la concentration de H2O dans l'air (optionnel, vaut la valeur moyenne par défaut)
+    Elle prend en entrée la puissance solaire reçue, la constante sigma, la concentration de CO2 dans l'air (optionnel, vaut la valeur moyenne par défaut) et la concentration de H2O dans l'air (optionnel, vaut la valeur moyenne par défaut)
     Elle sort la puissance reçue + la puissance émise. Cela correspond à la puissance totale émise par la terre, c'est à partir de cette puissance qu'on peut calculer la température à la surface de la terre
     """
     X = (15 + 273)**4 * sigma  # Pour T = +15°C
@@ -144,7 +144,7 @@ def update_plot(time, mois, ax, fig, shapes, x, y, z, constante_solaire, sigma, 
     """
     sun_vector = np.array([1, 0, 0])
     puissance_recue, _ = calc_power_temp(time, mois, sun_vector, x, y, z, phi, theta, constante_solaire, sigma, rayon_astre_m, list_albedo, latitudes, longitudes)
-    puissance_recu, temperature_recue = effet_de_serre(puissance_recue)
+    puissance_recu, temperature_recue = effet_de_serre(puissance_recue, sigma)
     ax.clear()
 
     for shape in shapes:
