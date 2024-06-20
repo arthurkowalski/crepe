@@ -107,6 +107,11 @@ C_CO2_moy = 400 #ppm
 C_H2O_moy = 25000 #ppm
 
 def effet_de_serre(puissance_recue, C_CO2=C_CO2_moy, C_H2O=C_H2O_moy):
+    """
+    Fonction pour rajouter l'effet de serre
+    Elle prend en entrée la puissance solaire reçue, la concentration de CO2 dans l'air (optionnel, vaut la valeur moyenne par défaut) et la concentration de H2O dans l'air (optionnel, vaut la valeur moyenne par défaut)
+    Elle sort la puissance reçue + la puissance émise. Cela correspond à la puissance totale émise par la terre, c'est à partir de cette puissance qu'on peut calculer la température à la surface de la terre
+    """
     X = (15 + 273)**4 * sigma  # Pour T = +15°C
     coef_moy = (X - puissance_recue) / X  # X = puissance émise par la terre
 
@@ -122,15 +127,15 @@ def effet_de_serre(puissance_recue, C_CO2=C_CO2_moy, C_H2O=C_H2O_moy):
 
     temperature = (puissance_recue + puissance_emise / sigma)**(1 / 4) - 273
     # print(temperature)
-    return puissance_recue + puissance_emise
+    return puissance_recue + puissance_emise, temperature
 
 
 # Fonction pour mettre à jour le graphique
 def update_plot(time, mois=3):
-    puissance_recue, _ = calc_power_temp(time, mois)
+    puissance_recue, temperature_recue = calc_power_temp(time, mois)
     ax.clear()
 
-    puissance_recue = effet_de_serre(puissance_recue)
+    puissance_recue, temperature_recue = effet_de_serre(puissance_recue)
 
 
     # Plot the coastlines
@@ -146,7 +151,7 @@ def update_plot(time, mois=3):
 
 
     # Plot the sphere surface
-    surf = ax.plot_surface(x, y, z, facecolors=plt.cm.viridis(puissance_recue / np.max(puissance_recue)), rstride=1, cstride=1, linewidth=1)
+    surf = ax.plot_surface(x, y, z, facecolors=plt.cm.viridis(temperature_recue / np.max(temperature_recue)), rstride=1, cstride=1, linewidth=1)
 
     # Uncomment and plot additional coordinates if necessary
     # for i in range(len(cooo)):
