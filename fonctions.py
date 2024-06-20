@@ -103,6 +103,10 @@ def calc_power_temp(time, mois, sun_vector, x, y, z, phi, theta, constante_solai
     return puissance_recue, temperature
 
 def update_plot(time, mois, ax, fig, shapes, x, y, z, constante_solaire, sigma, phi, theta, rayon_astre_m, list_albedo, latitudes, longitudes):
+        """
+    Fonction prend en entrée l'heure de la journée et le mois (par défaut, Mars : sera modifié quand on clique sur les boutons à gauche de la modélisation), l'axe, la figure, shapes, les coordonnées (x,y,z), les constantes :sigma, phi, theta, rayon_astre_m, la liste d'albedo, la latitude et la longitude 
+    Elle calcule la puissance emise par la terre avec la fonction calc_power_temp puis  effet_de_serre.  Puis elle met à jour le modèle : les lignes de côte sont tracées, puis la surface de la sphère est représentée en utilisant les valeurs de puissance calculées, avec des couleurs déterminées par une colormap (viridis).
+    """
     sun_vector = np.array([1, 0, 0])
     puissance_recue, _ = calc_power_temp(time, mois, sun_vector, x, y, z, phi, theta, constante_solaire, sigma, rayon_astre_m, list_albedo, latitudes, longitudes)
     ax.clear()
