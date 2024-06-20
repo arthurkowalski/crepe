@@ -10,7 +10,8 @@ Fonctions :
 
 
 ConstructionsCSV : 
+    Permet la création du dossier albedo et des fichier albedo{i} csv
 
 
-
-Remplissage 
+RemplissageCSV : 
+    Remplissage de chaque fichier csv d'albedo 
