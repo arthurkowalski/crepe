@@ -6,10 +6,10 @@ def update_sun_vector(mois, sun_vector):
     """
     Met à jour le vecteur solaire en fonction du mois pour tenir compte de l'inclinaison saisonnière de l'axe de la Terre.
     
-    Parameters:
+    Paramètres:
     mois (int): Le mois de l'année (1 pour janvier, 12 pour décembre).
     
-    Returns:
+    Retours:
     numpy.ndarray: Le vecteur solaire mis à jour après application de la rotation saisonnière.
 
     La matrice de rotation saisonnière est utilisée pour faire pivoter le vecteur solaire autour de l'axe y en fonction de la saison .
