@@ -6,10 +6,10 @@ def update_sun_vector(mois, sun_vector):
     """
     Met à jour le vecteur solaire en fonction du mois pour tenir compte de l'inclinaison saisonnière de l'axe de la Terre.
     
-    Parameters:
+    Paramètres:
     mois (int): Le mois de l'année (1 pour janvier, 12 pour décembre).
     
-    Returns:
+    Retours:
     numpy.ndarray: Le vecteur solaire mis à jour après application de la rotation saisonnière.
 
     La matrice de rotation saisonnière est utilisée pour faire pivoter le vecteur solaire autour de l'axe y en fonction de la saison .
@@ -25,6 +25,12 @@ def update_sun_vector(mois, sun_vector):
 
 # Fonction pour projeter les coordonnées sur une sphère
 def project_to_sphere(lon, lat, radius=1):
+    """
+    Prend en entrée la longitude, la lititude et le rayon (optionnel, 1 par défaut)
+    Fonction qui convertit des coordonnées géographiques (longitude et latitude) en coordonnées cartésiennes
+    Sort les valeurs x, y, z de la position en coordonnées cartésiennes
+
+    """
     lon = np.radians(lon)
     lat = np.radians(lat)
     x = radius * np.cos(lat) * np.cos(lon)
@@ -43,6 +49,11 @@ def get_shape(shape):
     return x_coast, y_coast, z_coast
 
 def get_albedo(lat, lon, mois, list_albedo, latitudes, longitudes):
+    """
+    Prend en entrée la latitude, la longitude et le mois
+    Fonction qui va chercher l'albedo de ce points pour ce mois particulier dans la listes créée précédemment list_albedo
+    Sort la valeur de l'albedo
+    """
     lat_idx = (np.abs(latitudes - lat)).argmin()
     lon_idx = (np.abs(longitudes - lon)).argmin()
     return list_albedo[mois-1][lat_idx, lon_idx]
@@ -103,6 +114,10 @@ def calc_power_temp(time, mois, sun_vector, x, y, z, phi, theta, constante_solai
     return puissance_recue, temperature
 
 def update_plot(time, mois, ax, fig, shapes, x, y, z, constante_solaire, sigma, phi, theta, rayon_astre_m, list_albedo, latitudes, longitudes):
+        """
+    Fonction prend en entrée l'heure de la journée et le mois (par défaut, Mars : sera modifié quand on clique sur les boutons à gauche de la modélisation), l'axe, la figure, shapes, les coordonnées (x,y,z), les constantes :sigma, phi, theta, rayon_astre_m, la liste d'albedo, la latitude et la longitude 
+    Elle calcule la puissance emise par la terre avec la fonction calc_power_temp puis  effet_de_serre.  Puis elle met à jour le modèle : les lignes de côte sont tracées, puis la surface de la sphère est représentée en utilisant les valeurs de puissance calculées, avec des couleurs déterminées par une colormap (viridis).
+    """
     sun_vector = np.array([1, 0, 0])
     puissance_recue, _ = calc_power_temp(time, mois, sun_vector, x, y, z, phi, theta, constante_solaire, sigma, rayon_astre_m, list_albedo, latitudes, longitudes)
     ax.clear()
@@ -123,9 +138,17 @@ def update_plot(time, mois, ax, fig, shapes, x, y, z, constante_solaire, sigma, 
     fig.canvas.draw_idle()
 
 def slider_update(val, current_month, ax, fig, shapes, x, y, z, constante_solaire, sigma, phi, theta, rayon_astre_m, list_albedo, latitudes, longitudes):
+        """
+    Prend en entrée l'heure de la journée, le mois, l'axe, la figure, shapes, les coordonnées (x,y,z), les constantes :sigma, phi, theta, rayon_astre_m, la liste d'albedo, la latitude et la longitude  
+    Fonction qui update le modèle lorsque l'on fait varier la valeur de temps.
+    """
     update_plot(val, current_month[0], ax, fig, shapes, x, y, z, constante_solaire, sigma, phi, theta, rayon_astre_m, list_albedo, latitudes, longitudes)
 
 def set_mois(mois, current_month, time_slider, ax, fig, shapes, x, y, z, constante_solaire, sigma, phi, theta, rayon_astre_m, list_albedo, latitudes, longitudes):
+        """
+    Prend en entrée le mois, l'heure de la journée, l'axe, la figure, shapes, les coordonnées (x,y,z), les constantes :sigma, phi, theta, rayon_astre_m, la liste d'albedo, la latitude et la longitude
+    Fonction qui update le modèle lorsque l'on choisit un nouveau mois.
+    """
     current_month[0] = mois
     update_sun_vector(current_month[0], np.array([1, 0, 0]))
     time_slider.reset()
