@@ -39,6 +39,15 @@ def project_to_sphere(lon, lat, radius=1):
     return x, y, z
 
 def get_shape(shape):
+    """
+    Extrait et projette les points d'une forme géographique sur une sphère.
+
+    Paramètres:
+    shape: Objet de forme géographique contenant des points (lon, lat).
+
+    Retours:
+    tuple: Coordonnées (x, y, z) projetées sur une sphère, ou None si les points sont insuffisants.
+    """
     points = np.array(shape.points)
     points = points[::300]
     lon = points[:, 0]
