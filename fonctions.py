@@ -26,7 +26,7 @@ def update_sun_vector(mois, sun_vector):
 # Fonction pour projeter les coordonnées sur une sphère
 def project_to_sphere(lon, lat, radius=1):
     """
-    Prend en entrée la longitude, la lititude et le rayon (optionnel, 1 par défaut)
+    Prend en entrée la longitude, la latitude et le rayon (optionnel, 1 par défaut)
     Fonction qui convertit des coordonnées géographiques (longitude et latitude) en coordonnées cartésiennes
     Sort les valeurs x, y, z de la position en coordonnées cartésiennes
 
@@ -60,7 +60,7 @@ def get_shape(shape):
 def get_albedo(lat, lon, mois, list_albedo, latitudes, longitudes):
     """
     Prend en entrée la latitude, la longitude et le mois
-    Fonction qui va chercher l'albedo de ce points pour ce mois particulier dans la listes créée précédemment list_albedo
+    Fonction qui va chercher l'albedo de ce point pour ce mois particulier dans la listes créée précédemment list_albedo
     Sort la valeur de l'albedo
     """
     lat_idx = (np.abs(latitudes - lat)).argmin()
