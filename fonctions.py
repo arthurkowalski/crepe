@@ -25,6 +25,12 @@ def update_sun_vector(mois, sun_vector):
 
 # Fonction pour projeter les coordonnées sur une sphère
 def project_to_sphere(lon, lat, radius=1):
+    """
+    Prend en entrée la longitude, la lititude et le rayon (optionnel, 1 par défaut)
+    Fonction qui convertit des coordonnées géographiques (longitude et latitude) en coordonnées cartésiennes
+    Sort les valeurs x, y, z de la position en coordonnées cartésiennes
+
+    """
     lon = np.radians(lon)
     lat = np.radians(lat)
     x = radius * np.cos(lat) * np.cos(lon)
@@ -43,6 +49,11 @@ def get_shape(shape):
     return x_coast, y_coast, z_coast
 
 def get_albedo(lat, lon, mois, list_albedo, latitudes, longitudes):
+    """
+    Prend en entrée la latitude, la longitude et le mois
+    Fonction qui va chercher l'albedo de ce points pour ce mois particulier dans la listes créée précédemment list_albedo
+    Sort la valeur de l'albedo
+    """
     lat_idx = (np.abs(latitudes - lat)).argmin()
     lon_idx = (np.abs(longitudes - lon)).argmin()
     return list_albedo[mois-1][lat_idx, lon_idx]
@@ -134,6 +145,10 @@ def slider_update(val, current_month, ax, fig, shapes, x, y, z, constante_solair
     update_plot(val, current_month[0], ax, fig, shapes, x, y, z, constante_solaire, sigma, phi, theta, rayon_astre_m, list_albedo, latitudes, longitudes)
 
 def set_mois(mois, current_month, time_slider, ax, fig, shapes, x, y, z, constante_solaire, sigma, phi, theta, rayon_astre_m, list_albedo, latitudes, longitudes):
+        """
+    Prend en entrée le mois, l'heure de la journée, l'axe, la figure, shapes, les coordonnées (x,y,z), les constantes :sigma, phi, theta, rayon_astre_m, la liste d'albedo, la latitude et la longitude
+    Fonction qui update le modèle lorsque l'on choisit un nouveau mois.
+    """
     current_month[0] = mois
     update_sun_vector(current_month[0], np.array([1, 0, 0]))
     time_slider.reset()
