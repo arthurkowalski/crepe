@@ -15,3 +15,7 @@ ConstructionsCSV :
 
 RemplissageCSV : 
     Remplissage de chaque fichier csv d'albedo 
+
+/albedo : contient les fichiers de données de l'albedo
+
+/data : contient les données pour tracer les frontières sur le globe
