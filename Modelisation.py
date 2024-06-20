@@ -107,6 +107,11 @@ C_CO2_moy = 400 #ppm
 C_H2O_moy = 25000 #ppm
 
 def effet_de_serre(puissance_recue, C_CO2=C_CO2_moy, C_H2O=C_H2O_moy):
+    """
+    Fonction pour rajouter l'effet de serre
+    Elle prend en entrée la puissance solaire reçue, la concentration de CO2 dans l'air (optionnel, vaut la valeur moyenne par défaut) et la concentration de H2O dans l'air (optionnel, vaut la valeur moyenne par défaut)
+    Elle sort la puissance reçue + la puissance émise. Cela correspond à la puissance totale émise par la terre, c'est à partir de cette puissance qu'on peut calculer la température à la surface de la terre
+    """
     X = (15 + 273)**4 * sigma  # Pour T = +15°C
     coef_moy = (X - puissance_recue) / X  # X = puissance émise par la terre
 
