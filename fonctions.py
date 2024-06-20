@@ -127,6 +127,10 @@ def update_plot(time, mois, ax, fig, shapes, x, y, z, constante_solaire, sigma, 
     fig.canvas.draw_idle()
 
 def slider_update(val, current_month, ax, fig, shapes, x, y, z, constante_solaire, sigma, phi, theta, rayon_astre_m, list_albedo, latitudes, longitudes):
+        """
+    Prend en entrée l'heure de la journée, le mois, l'axe, la figure, shapes, les coordonnées (x,y,z), les constantes :sigma, phi, theta, rayon_astre_m, la liste d'albedo, la latitude et la longitude  
+    Fonction qui update le modèle lorsque l'on fait varier la valeur de temps.
+    """
     update_plot(val, current_month[0], ax, fig, shapes, x, y, z, constante_solaire, sigma, phi, theta, rayon_astre_m, list_albedo, latitudes, longitudes)
 
 def set_mois(mois, current_month, time_slider, ax, fig, shapes, x, y, z, constante_solaire, sigma, phi, theta, rayon_astre_m, list_albedo, latitudes, longitudes):
