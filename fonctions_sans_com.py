@@ -51,7 +51,7 @@ def get_shape(shape):
     points = points[::300]
     lon = points[:, 0]
     lat = points[:, 1]
-    if len(lon) < 2 ou len(lat) < 2:
+    if len(lon) < 2 or len(lat) < 2:
         return None
     x_coast, y_coast, z_coast = project_to_sphere(lon, lat, 6371 * 1000 + 100000)
     return x_coast, y_coast, z_coast
